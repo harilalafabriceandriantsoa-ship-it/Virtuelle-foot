@@ -31,14 +31,49 @@ div[data-testid="stAppViewContainer"]{max-width:500px;margin:0 auto;padding:0 8p
 .lock-card{background:rgba(255,255,255,.08);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:32px 24px;margin:60px auto;max-width:360px;text-align:center}
 .stButton>button{background:linear-gradient(135deg,#7c3aed,#ec4899)!important;color:#fff!important;font-weight:700!important;border-radius:16px!important;height:52px!important;border:none!important;width:100%!important;font-size:1rem!important;letter-spacing:.04em!important;transition:all .2s!important}
 .stButton>button:hover{transform:scale(1.02);box-shadow:0 0 24px rgba(167,139,250,.5)!important}
-.stTextInput label,.stNumberInput label,.stSelectbox label{color:rgba(255,255,255,.7)!important;font-weight:600!important;font-size:.85rem!important}
-.stTextInput input{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;color:#fff!important;border-radius:12px!important;font-size:.9rem!important;padding:10px 14px!important}
-.stTextInput input::placeholder{color:rgba(255,255,255,.45)!important;font-style:italic!important}
-.stTextInput input:focus{border-color:#a78bfa!important;box-shadow:0 0 12px rgba(167,139,250,.3)!important;background:rgba(255,255,255,.14)!important}
-.stNumberInput input{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;color:#fff!important;border-radius:12px!important;font-size:.9rem!important;padding:10px 14px!important}
-.stNumberInput input:focus{border-color:#a78bfa!important;box-shadow:0 0 12px rgba(167,139,250,.3)!important}
-.stSelectbox>div>div{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;border-radius:12px!important;color:#fff!important}
-div[data-testid="stNumberInput"] button{background:rgba(167,139,250,.2)!important;border:none!important;color:#fff!important;border-radius:8px!important}
+
+/* --- AMBOARINA NY INPUT ETO (SORATRA MAINTY SY STYLÉ) --- */
+.stTextInput label, .stNumberInput label, .stSelectbox label {
+    color:rgba(255,255,255,.7)!important;
+    font-weight:600!important;
+    font-size:.85rem!important;
+}
+
+.stTextInput input, .stNumberInput input {
+    background: #ffffff !important; /* Background fotsy tanteraka */
+    color: #000000 !important; /* Soratra mainty tanteraka */
+    border: 2px solid #a78bfa !important;
+    border-radius: 12px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important; /* Soratra matevina */
+    padding: 10px 14px !important;
+    opacity: 1 !important;
+}
+
+.stTextInput input::placeholder {
+    color: #444444 !important; /* Placeholder somary mainty kokoa */
+    font-style: italic !important;
+    opacity: 0.7 !important;
+}
+
+.stTextInput input:focus {
+    border-color: #f472b6 !important;
+    box-shadow: 0 0 12px rgba(167,139,250,0.4) !important;
+}
+
+.stSelectbox>div>div {
+    background: #ffffff !important;
+    border: 2px solid #a78bfa !important;
+    border-radius: 12px !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+div[data-testid="stNumberInput"] button {
+    background: rgba(167,139,250,0.2) !important;
+    border: none !important;
+    color: #fff !important;
+}
 @media(max-width:480px){.card{padding:14px!important}.rc{padding:18px!important}}
 </style>
 """, unsafe_allow_html=True)
@@ -64,45 +99,28 @@ if not st.session_state.auth:
 
 # ── ENGINE ULTRA ──
 def predict(c1, cN, c2, r1, r2, pts1, pts2, f1, f2, dom):
-    """
-    MOTEUR ULTRA PUISSANT:
-    1. Dé-marginalisation des cotes bookmaker
-    2. Ajustement classement (rang)
-    3. Ajustement points (performance récente)
-    4. Ajustement forme (W/D/L derniers matchs)
-    5. Avantage domicile
-    6. Prédiction score Poisson
-    7. Value bet edge
-    """
-    # 1. PROBA IMPLICITES + DÉ-MARGIN
     pi1, piN, pi2 = 1/c1, 1/cN, 1/c2
     tot = pi1+piN+pi2
     p1, pN, p2 = pi1/tot, piN/tot, pi2/tot
 
-    # 2. FACTEUR CLASSEMENT (rang bas = meilleur)
-    rd = (r2-r1)/max(r1,r2,1)  # -1..+1
+    rd = (r2-r1)/max(r1,r2,1)
     rank_adj = np.tanh(rd*1.2)*0.10
 
-    # 3. FACTEUR POINTS (plus de pts = meilleur)
     ptot = max(pts1+pts2, 1)
     pts_adj = ((pts1-pts2)/ptot)*0.08
 
-    # 4. FACTEUR FORME (W=3,D=1,L=0)
     form_map = {"W":3,"D":1,"L":0}
     sc1 = form_map.get(f1.upper(),1)/3
     sc2 = form_map.get(f2.upper(),1)/3
     form_adj = (sc1-sc2)*0.07
 
-    # 5. AVANTAGE DOMICILE
     home_adj = 0.05 if dom else 0.0
 
-    # 6. AJUSTEMENT TOTAL
     adj_total = rank_adj + pts_adj + form_adj + home_adj
     p1a = p1 + adj_total*0.65
     p2a = p2 - adj_total*0.65
     pNa = pN - abs(adj_total)*0.08
 
-    # 7. NORMALISATION
     def norm(a,b,c):
         t=a+b+c
         return (max(0.04,a/t), max(0.04,b/t), max(0.04,c/t))
@@ -110,19 +128,15 @@ def predict(c1, cN, c2, r1, r2, pts1, pts2, f1, f2, dom):
     s = p1f+pNf+p2f
     p1f,pNf,p2f = p1f/s, pNf/s, p2f/s
 
-    # 8. LAMBDA POISSON (buts attendus)
-    # Base buts = 1.3 (moyenne foot virtuel)
     lam1 = 1.3 * (p1f/(p1f+p2f+0.01)) * 2.2
     lam2 = 1.3 * (p2f/(p1f+p2f+0.01)) * 2.2
     lam1 = np.clip(lam1, 0.3, 3.5)
     lam2 = np.clip(lam2, 0.3, 3.5)
 
-    # 9. SCORE LE PLUS PROBABLE (Poisson)
     best_s, best_p = (0,0), 0.0
     all_scores = {}
     for g1 in range(7):
         for g2 in range(7):
-            # P(X=k) = e^-λ * λ^k / k!
             p_g1 = np.exp(-lam1)*(lam1**g1)/np.math.factorial(g1)
             p_g2 = np.exp(-lam2)*(lam2**g2)/np.math.factorial(g2)
             prob = p_g1*p_g2
@@ -131,10 +145,8 @@ def predict(c1, cN, c2, r1, r2, pts1, pts2, f1, f2, dom):
                 best_p = prob
                 best_s = (g1,g2)
 
-    # 10. TOP 3 SCORES
     top3 = sorted(all_scores.items(), key=lambda x:-x[1])[:3]
 
-    # 11. VALUE BETS
     e1 = round((p1f*c1-1)*100,2)
     eN = round((pNf*cN-1)*100,2)
     e2 = round((p2f*c2-1)*100,2)
@@ -196,19 +208,16 @@ with f2c:
 
 st.markdown("<div class='sec'>🏟️ DOMICILE</div>",unsafe_allow_html=True)
 dom=st.toggle("Équipe 1 joue à domicile",value=False)
-
 st.markdown("</div>",unsafe_allow_html=True)
 
 if st.button("🔮 LANCER LA PRÉDICTION", use_container_width=True):
     res = predict(cote1,coteN,cote2,rank1,rank2,pts1,pts2,form1,form2,dom)
-
     wk=res["wk"]
     b1="active" if wk=="1" else ""
     bN="active" if wk=="N" else ""
     b2="active" if wk=="2" else ""
     icon="🏠" if wk=="1" else("🤝" if wk=="N" else"✈️")
 
-    # RÉSULTAT PRINCIPAL
     st.markdown(f"""
     <div class='rc'>
         <div class='rl'>📈 Prédiction 1N2</div>
@@ -222,7 +231,6 @@ if st.button("🔮 LANCER LA PRÉDICTION", use_container_width=True):
     </div>
     """, unsafe_allow_html=True)
 
-    # SCORE EXACT
     g1,g2=res["score"]
     st.markdown("<div class='card'>",unsafe_allow_html=True)
     st.markdown("<div class='sec'>⚽ SCORE EXACT PRÉDIT</div>",unsafe_allow_html=True)
@@ -233,22 +241,18 @@ if st.button("🔮 LANCER LA PRÉDICTION", use_container_width=True):
     </div>
     """,unsafe_allow_html=True)
 
-    # TOP 3 SCORES
     st.markdown("<div style='color:rgba(255,255,255,.6);font-size:.78rem;font-weight:600;margin:10px 0 6px;'>🎯 TOP 3 SCORES LES PLUS PROBABLES</div>",unsafe_allow_html=True)
     for i,(sc,prob) in enumerate(res["top3"]):
         rank_icons=["🥇","🥈","🥉"]
         bg="rgba(167,139,250,.15)" if i==0 else "rgba(255,255,255,.05)"
         st.markdown(f"""
-        <div style='display:flex;justify-content:space-between;align-items:center;
-             background:{bg};border-radius:12px;padding:9px 14px;margin-bottom:6px;
-             border:1px solid rgba(255,255,255,.08)'>
+        <div style='display:flex;justify-content:space-between;align-items:center;background:{bg};border-radius:12px;padding:9px 14px;margin-bottom:6px;border:1px solid rgba(255,255,255,.08)'>
             <span style='font-weight:700;color:#fff;font-size:.9rem'>{rank_icons[i]} {sc[0]} — {sc[1]}</span>
             <span style='color:#a78bfa;font-weight:700;font-size:.9rem'>{prob}%</span>
         </div>
         """,unsafe_allow_html=True)
     st.markdown("</div>",unsafe_allow_html=True)
 
-    # VALUE BETS
     st.markdown("<div class='card'>",unsafe_allow_html=True)
     st.markdown("<div class='sec'>💡 VALUE BET ANALYSIS</div>",unsafe_allow_html=True)
     for lbl,edge,cote in [("Équipe 1",res['e1'],cote1),("Nul",res['eN'],coteN),("Équipe 2",res['e2'],cote2)]:
@@ -262,15 +266,5 @@ if st.button("🔮 LANCER LA PRÉDICTION", use_container_width=True):
         </div>
         """,unsafe_allow_html=True)
     st.markdown("</div>",unsafe_allow_html=True)
-
-    # ACCURACY
-    diff = abs(rank1-rank2)+abs(pts1-pts2)/10
-    accuracy = min(96.5, round(82 + diff*0.3 + (abs(res['e1'])+abs(res['e2']))*0.05, 1))
-    st.markdown(f"""
-    <div class='acc-box'>
-        <span style='font-weight:700;color:#166534;font-size:.9rem'>🎯 Précision du modèle : {accuracy}%</span><br>
-        <span style='font-size:.75rem;color:rgba(255,255,255,.5)'>Poisson + Dé-marginalisation + Classement + Forme + Domicile</span>
-    </div>
-    """,unsafe_allow_html=True)
 
 st.markdown("<div style='text-align:center;color:rgba(255,255,255,.2);font-size:.65rem;margin-top:16px;padding-bottom:24px'>⚽ FOOT VIRTUEL ANDR • Prédiction IA Ultra Puissante</div>",unsafe_allow_html=True)

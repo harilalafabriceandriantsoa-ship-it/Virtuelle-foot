@@ -34,13 +34,17 @@ div[data-testid="stAppViewContainer"]{max-width:520px;margin:0 auto;padding:0 8p
 .stButton>button{background:linear-gradient(135deg,#7c3aed,#ec4899)!important;color:#fff!important;font-weight:700!important;border-radius:16px!important;height:52px!important;border:none!important;width:100%!important;font-size:1rem!important;transition:all .2s!important}
 .stButton>button:hover{transform:scale(1.02);box-shadow:0 0 24px rgba(167,139,250,.5)!important}
 .stTextInput label,.stNumberInput label,.stSelectbox label{color:rgba(255,255,255,.7)!important;font-weight:600!important;font-size:.83rem!important}
-.stTextInput input{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;color:#fff!important;border-radius:12px!important;font-size:.9rem!important;padding:10px 14px!important}
-.stTextInput input::placeholder{color:rgba(255,255,255,.45)!important;font-style:italic!important}
-.stTextInput input:focus{border-color:#a78bfa!important;box-shadow:0 0 12px rgba(167,139,250,.3)!important;background:rgba(255,255,255,.14)!important}
-.stNumberInput input{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;color:#fff!important;border-radius:12px!important;font-size:.9rem!important;padding:10px 14px!important}
-.stNumberInput input:focus{border-color:#a78bfa!important;background:rgba(255,255,255,.14)!important}
-.stSelectbox>div>div{background:rgba(255,255,255,.1)!important;border:2px solid rgba(167,139,250,.4)!important;border-radius:12px!important;color:#fff!important}
-div[data-testid="stNumberInput"] button{background:rgba(167,139,250,.2)!important;border:none!important;color:#fff!important;border-radius:8px!important}
+
+/* FANITSIANA NY SORATRA HO MAINTY SY STYLÉ */
+.stTextInput input{background:rgba(255,255,255,.95)!important;border:2px solid rgba(167,139,250,.6)!important;color:#000000!important;font-weight:800!important;letter-spacing:.03em!important;border-radius:12px!important;font-size:1rem!important;padding:12px 14px!important}
+.stTextInput input::placeholder{color:#222222!important;font-weight:700!important;font-style:italic!important;opacity:.85!important}
+.stTextInput input:focus{border-color:#a78bfa!important;box-shadow:0 0 12px rgba(167,139,250,.5)!important;background:#ffffff!important}
+
+.stNumberInput input{background:rgba(255,255,255,.95)!important;border:2px solid rgba(167,139,250,.6)!important;color:#000000!important;font-weight:800!important;border-radius:12px!important;font-size:1rem!important;padding:12px 14px!important}
+.stNumberInput input:focus{border-color:#a78bfa!important;background:#ffffff!important}
+
+.stSelectbox>div>div{background:rgba(255,255,255,.95)!important;border:2px solid rgba(167,139,250,.6)!important;border-radius:12px!important;color:#000000!important;font-weight:800!important}
+div[data-testid="stNumberInput"] button{background:rgba(167,139,250,.8)!important;border:none!important;color:#fff!important;border-radius:8px!important}
 @media(max-width:480px){.card{padding:14px!important}.rc{padding:16px!important}}
 </style>
 """, unsafe_allow_html=True)
